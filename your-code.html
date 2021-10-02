@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Not my first three.js app</title>
+		<style>
+
+			body { margin: 0; }
+			#btn{position: absolute;}
+		</style>
+	</head>
+	<body>
+		<button id = "btn" >lock</button>
+		<script src="../node_modules/three/build/three.js"></script>
+		<script src="../node_modules/three/examples/js/controls/OrbitControls.js"></script>
+		<script src="../node_modules/three/examples/js/loaders/GLTFLoader.js"></script>
+		<script src="../node_modules/three/examples/js/controls/PointerLockControls.js"></script>
+
+		<script> 
+
+	var w,a,s,d
+	var x,z
+
+				class ThirdPersonCamera {
+					  constructor(params) {
+					    this._params = params;
+					    this._camera = params.camera;
+
+					    this._currentPosition = new THREE.Vector3();
+					    this._currentLookat = new THREE.Vector3();
+					  }
+
+				 _CalculateIdealOffset() {
+					    const idealOffset = new THREE.Vector3(-15, 20, -30);
+					    idealOffset.applyQuaternion(this._params.target.Rotation);
+					    idealOffset.add(this._params.target.Position);
+					    return idealOffset;
+					  }
+
+				 _CalculateIdealLookat() {
+					    const idealLookat = new THREE.Vector3(0, 10, 50);
+					    idealLookat.applyQuaternion(this._params.target.Rotation);
+					    idealLookat.add(this._params.target.Position);
+					    return idealLookat;
+					  }
+
+				 Update(timeElapsed) {
+					    const idealOffset = this._CalculateIdealOffset();
+					    const idealLookat = this._CalculateIdealLookat();
+
+					    // const t = 0.05;
+					    // const t = 4.0 * timeElapsed;
+					    const t = 1.0 - Math.pow(0.001, timeElapsed);
+
+					    this._currentPosition.lerp(idealOffset, t);
+					    this._currentLookat.lerp(idealLookat, t);
+
+					    this._camera.position.copy(this._currentPosition);
+					    this._camera.lookAt(this._currentLookat);
+					  }
+
+
+						 get Position() {return this._position;
+								}
+
+						 get Rotation() {
+								    if (!this._target) {return new THREE.Quaternion();}
+								    return this._target.quaternion;
+								}
+
+				}
+
+
+
+
+
+
+			const scene = new THREE.Scene();
+
+			this._camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			this._camera.position.z = 5;
+
+			this._thirPersonCamera= new ThirdPersonCamera({
+				camera: this._camera,
+			})
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.shadowMap.enabled=true
+
+			document.body.appendChild( renderer.domElement );
+
+
+			//let pointer=new THREE.PointerLockControls(camera,renderer.domElement)
+
+
+
+
+		//	const orbitControls = new THREE.OrbitControls(camera,renderer.domElement)
+		//	orbitControls.enableDamping = true
+		//	orbitControls.minDistance = 5
+		//	orbitControls.maxDistance = 15
+		//	orbitControls.enablePan = false
+		//	orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
+		//	orbitControls.update();
+
+
+
+
+
+
+	var light = new THREE.PointLight(0xffffff, 0.8, 18);
+	light.position.set(-0,10,0);
+	light.castShadow = true;
+	light.shadow.camera.near = 0.2;
+	light.shadow.camera.far = 25;
+	light.shadow.mapSize.width = 2048; // You have there 4K no need to go over 2K
+	light.shadow.mapSize.height = 2048;
+	scene.add(light);
+
+	//ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+	//scene.add(ambientLight);
+
+
+
+
+
+
+
+			const geometry2 = new THREE.PlaneGeometry( 20, 20 );
+			const material2 = new THREE.MeshPhongMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const plane = new THREE.Mesh( geometry2, material2 );
+			plane.receiveShadow=true;
+			plane.rotation.x= Math.PI / 2
+			scene.add( plane );
+
+
+			const geometry = new THREE.BoxGeometry();
+			const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+			const cube = new THREE.Mesh( geometry, material );
+			cube.receiveShadow=true;
+			cube.castShadow=true;
+			cube.position.y=.5
+			scene.add( cube );
+
+			
+
+			const animate = function () {
+				requestAnimationFrame( animate );
+				renderer.render( scene, 	this._thirPersonCamera.Update() );
+				//controls()
+				//orbitControls.update();
+
+			};
+
+			animate();
+
+
+			function controls(){
+				if (w){tv.position.x -= Math.sin(camera.rotation.z)*.5 ;
+						tv.position.z -= Math.cos(camera.rotation.z)*.5;
+						camera.position.x -= Math.sin(camera.rotation.z)*.5 ;
+						camera.position.z -= Math.cos(camera.rotation.z)*.5;};
+				if (s){tv.position.x += Math.sin(camera.rotation.z)*.5 ;
+						tv.position.z += Math.cos(camera.rotation.z)*.5;
+						camera.position.x += Math.sin(camera.rotation.z)*.5 ;
+						camera.position.z += Math.cos(camera.rotation.z)*.5;};
+				if (a){tv.position.z-=0.1};
+				if (d){tv.position.z+=0.1};
+			}
+
+			document.addEventListener("keydown", keydown)
+			document.addEventListener("keyup", keyup)
+			function keydown(e){
+				switch(e.keyCode){
+					case 87 : w= true;break;
+					case 83 : s= true;break;
+					case 65 : a= true;break;
+					case 68 : d= true;break;
+
+				}
+			}
+			function keyup(e){
+				switch(e.keyCode){
+					case 87 : w= false;break;
+					case 83 : s= false;break;
+					case 65 : a= false;break;
+					case 68 : d= false;break;
+				}
+			}
+
+
+			let btn = document.getElementById("btn")
+			btn.addEventListener("click",click)
+
+			function click(){
+				pointer.lock()
+			}
+
+
+
+		</script>
+	</body>
+</html>

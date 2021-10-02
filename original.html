@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Not my first three.js app</title>
+		<style>
+
+			body { margin: 0; }
+			#btn{position: absolute;}
+		</style>
+	</head>
+	<body>
+		<button id = "btn" >lock</button>
+		<script src="../node_modules/three/build/three.js"></script>
+		<script src="../node_modules/three/examples/js/controls/OrbitControls.js"></script>
+		<script src="../node_modules/three/examples/js/loaders/GLTFLoader.js"></script>
+		<script src="../node_modules/three/examples/js/controls/PointerLockControls.js"></script>
+
+		<script> 
+			
+
+			var w,a,s,d
+			var x,z
+
+			const scene = new THREE.Scene();
+
+			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+			camera.position.z = 5;
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.shadowMap.enabled=true
+
+			document.body.appendChild( renderer.domElement );
+
+			let pointer=new THREE.PointerLockControls(camera,renderer.domElement)
+
+
+
+
+			const orbitControls = new THREE.OrbitControls(camera,renderer.domElement)
+			orbitControls.enableDamping = true
+			orbitControls.minDistance = 5
+			orbitControls.maxDistance = 15
+			orbitControls.enablePan = false
+			orbitControls.maxPolarAngle = Math.PI / 2 - 0.05
+			orbitControls.update();
+
+
+
+
+
+
+	var light = new THREE.PointLight(0xffffff, 0.8, 18);
+	light.position.set(-0,10,0);
+	light.castShadow = true;
+	light.shadow.camera.near = 0.2;
+	light.shadow.camera.far = 25;
+	light.shadow.mapSize.width = 2048; // You have there 4K no need to go over 2K
+	light.shadow.mapSize.height = 2048;
+	scene.add(light);
+
+	//ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+	//scene.add(ambientLight);
+
+		let loader= new THREE.GLTFLoader();
+		loader.load("models/tv.gltf",function(gltf){
+			tv=gltf.scene.children[0];
+			tv.scale.set(0.5,0.5,0.5)
+			z=tv.position.z=2
+			x=tv.position.x=0
+			tv.position.y=.5
+			tv.castShadow=true;
+			//tv.rotation.x=45
+			scene.add(gltf.scene)
+
+
+		})
+
+
+
+
+
+
+			const geometry2 = new THREE.PlaneGeometry( 20, 20 );
+			const material2 = new THREE.MeshPhongMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+			const plane = new THREE.Mesh( geometry2, material2 );
+			plane.receiveShadow=true;
+			plane.rotation.x= Math.PI / 2
+			scene.add( plane );
+
+
+			const geometry = new THREE.BoxGeometry();
+			const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+			const cube = new THREE.Mesh( geometry, material );
+			cube.receiveShadow=true;
+			cube.castShadow=true;
+			cube.position.y=.5
+			scene.add( cube );
+
+			
+
+			const animate = function () {
+
+				requestAnimationFrame( animate );
+
+//				cube.rotation.x += 0.01;
+//				cube.rotation.y += 0.01;
+				renderer.render( scene, camera );
+				controls()
+			
+					
+
+			};
+
+			animate();
+
+
+
+			function controls(){
+				if (w){cube.position.x -= Math.sin(camera.rotation.z)*.5 ;
+						cube.position.z -= Math.cos(camera.rotation.z)*.5;
+						camera.position.x -= Math.sin(camera.rotation.z)*.5 ;
+						camera.position.z -= Math.cos(camera.rotation.z)*.5;};
+					if (s){cube.position.x += Math.sin(camera.rotation.z)*.5 ;
+							cube.position.z += Math.cos(camera.rotation.z)*.5;
+							camera.position.x += Math.sin(camera.rotation.z)*.5 ;
+							camera.position.z += Math.cos(camera.rotation.z)*.5;};
+						if (a){cube.position.z-=0.1};
+							if (d){cube.position.z+=0.1};
+			}
+
+			document.addEventListener("keydown", keydown)
+			document.addEventListener("keyup", keyup)
+			function keydown(e){
+				switch(e.keyCode){
+					case 87 : w= true;break;
+					case 83 : s= true;break;
+					case 65 : a= true;break;
+					case 68 : d= true;break;
+
+				}
+			}
+			function keyup(e){
+				switch(e.keyCode){
+					case 87 : w= false;break;
+					case 83 : s= false;break;
+					case 65 : a= false;break;
+					case 68 : d= false;break;
+				}
+			}
+
+
+			let btn = document.getElementById("btn")
+			btn.addEventListener("click",click)
+
+			function click(){
+				pointer.lock()
+			}
+
+
+		</script>
+	</body>
+</html>
